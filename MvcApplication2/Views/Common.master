@@ -1,0 +1,27 @@
+﻿<%@ Master Language="C#" %>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head runat="server">
+    <link href="/resos/usual.css" rel="stylesheet" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+    <asp:ContentPlaceHolder ID="ContentPlaceHolderHead" runat="server">
+    </asp:ContentPlaceHolder>
+</head>
+<body <asp:ContentPlaceHolder ID="ContentPlaceHolderBODYTAGS" runat="server">
+            </asp:ContentPlaceHolder>>
+        <div class="NaviPanel" align="center">
+            YANAVIGATORPANEL<br/>
+            <a href="/"> TOMAIN</a><br/>
+            <a href="/Home/Info"> Инфо</a><br/>
+            <a href="/Home/Galery"> Галерейа</a><br/>
+            <a href="/Home/myvisits"> Визиты</a><br/>
+            <a href="/Home/Statictics"> Статистика</a><br/>
+        </div>
+        <div class="Content">
+            <asp:ContentPlaceHolder ID="ContentPlaceHolderBody" runat="server">
+            </asp:ContentPlaceHolder>
+        </div>
+</body>
+</html>
