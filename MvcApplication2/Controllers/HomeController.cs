@@ -196,7 +196,8 @@ namespace MvcApplication2.Controllers
                 ip2UserRegistations[userID].Visits.Count(visitTime => visitTime.Item1.Date.Equals(DateTime.Now.Date)), lastVisit);
 
             var fileName = new Random().Next() + ".jpg";
-            DrawText(toDraw, new Font(FontFamily.GenericMonospace, 15, FontStyle.Bold), Color.Brown, Color.Cornsilk).Save(@"c:\users\sht3ch\documents\visual studio 2013\Projects\MvcApplication2\MvcApplication2\pics\info\" + fileName, ImageFormat.Jpeg);
+            var path = @"c:\Users\sht3ch\Documents\LearnSpace\4tasks4net\MvcApplication2\pics\info\" + fileName;
+            DrawText(toDraw, new Font(FontFamily.GenericMonospace, 15, FontStyle.Bold), Color.Brown, Color.Cornsilk).Save(path, ImageFormat.Jpeg);
             return fileName;
         }
 
@@ -228,7 +229,7 @@ namespace MvcApplication2.Controllers
             string ans;
             if (DateTime.Now - ip2UserRegistations[UserIp()].LastPostTime < TimeSpan.FromSeconds(15))
             {
-                ans = "Еще не прошло 30 секунд с последней публикации. Ждать еще " + (15 - (DateTime.Now - ip2UserRegistations[UserIp()].LastPostTime).Seconds);
+                ans = "Еще не прошло 15 секунд с последней публикации. Ждать еще " + (15 - (DateTime.Now - ip2UserRegistations[UserIp()].LastPostTime).Seconds);
             }
             else
             {
@@ -254,7 +255,7 @@ namespace MvcApplication2.Controllers
             string ans;
             if (DateTime.Now - ip2UserRegistations[UserIp()].LastVoteTime < TimeSpan.FromSeconds(10))
             {
-                ans = "Еще не прошло 30 секунд с последнего голосования. Ждать еще " + (10 - (DateTime.Now - ip2UserRegistations[UserIp()].LastVoteTime).Seconds);
+                ans = "Еще не прошло 10 секунд с последнего голосования. Ждать еще " + (10 - (DateTime.Now - ip2UserRegistations[UserIp()].LastVoteTime).Seconds);
             }
             else
             {
@@ -281,7 +282,6 @@ namespace MvcApplication2.Controllers
             Register("info");
             return View();
         }
-
         [HttpPost]
         public ActionResult AddCommentPage(string fotoName, string review)
         {
@@ -303,7 +303,6 @@ namespace MvcApplication2.Controllers
                     Last()).
                     ToList());
         }
-
 
         public ActionResult MyVisits()
         {
@@ -338,9 +337,14 @@ namespace MvcApplication2.Controllers
 
             var mark = FotoName2Comments.ContainsKey(requiredName) ? FotoName2Comments[requiredName].Mark : 0;
 
-            File.
+            string filename = string.Format(@"c:\Users\sht3ch\Documents\LearnSpace\4tasks4net\MvcApplication2\pics\marks\mark{0}.jpg",mark);
 
-            return View(new VoteForFoto { foto = requiredName, sign = mark});
+            if (!System.IO.File.Exists(filename))
+            {
+                DrawText("Current mark is " + mark, new Font(FontFamily.GenericMonospace, 15, FontStyle.Bold), Color.Brown, Color.Cornsilk).Save(filename);
+            }
+
+            return View(new VoteForFoto { foto = requiredName, sign = mark, status = Path.GetFileName(filename)});
         }
         public ActionResult AjaxTestScript()
         {
