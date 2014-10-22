@@ -4,11 +4,32 @@ html {
     margin: 0;
 	height: 100%;
 }
+img{
+    max-width:80%;
+}
 body {
     background-image: linear-gradient(to right, #FFFFFF 0%, #86EF9B 100%);
 	padding: 0;
     margin: 0;
 	height: 100%;
+}
+#comments {
+    border: 2px solid white;
+    background-color: gray;
+    padding: 5px;
+    margin: 5px;
+}
+
+#votes {
+    border: 2px solid white;
+    background-color: gray;
+    padding: 5px;
+    margin: 5px;
+}
+
+.headers {
+    align-content: center;
+    font: italic 30px serif;
 }
 .Content {
     padding: 0;
@@ -16,6 +37,7 @@ body {
     margin-right: 200px;
 }
 .NaviPanel {
+    align-items: center;
     border-left: 10px solid green;
     padding: 10px;
     position: fixed;

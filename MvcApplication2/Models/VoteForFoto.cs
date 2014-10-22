@@ -2,8 +2,8 @@
 {
     public class VoteForFoto
     {
-        public int sign;
-        public string foto;
+        public int positive;
+        public int negative;
         public string status;
     }
 }

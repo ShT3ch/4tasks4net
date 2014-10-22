@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -144,8 +145,8 @@ namespace MvcApplication2.Controllers
     {
         //
         // GET: /Home/
-        private static Dictionary<string, UserRegistation> ip2UserRegistations = new Dictionary<string, UserRegistation>();
-        private static Dictionary<string, FotoDatas> FotoName2Comments = new Dictionary<string, FotoDatas>();
+        private static ConcurrentDictionary<string, UserRegistation> ip2UserRegistations = new ConcurrentDictionary<string, UserRegistation>();
+        private static ConcurrentDictionary<string, FotoDatas> FotoName2Comments = new ConcurrentDictionary<string, FotoDatas>();
 
         private Image DrawText(String text, Font font, Color textColor, Color backColor)
         {
@@ -182,40 +183,63 @@ namespace MvcApplication2.Controllers
 
         }
 
-        private string CreateStatistics()
+        private string FormStatistics(string x, string y)
         {
             var userID = UserIp();
-            var lastVisit = ip2UserRegistations[userID].Visits.Count > 1 ?
-                                string.Format("{0} on {1}", ip2UserRegistations[userID].Visits[ip2UserRegistations[userID].Visits.Count - 2].Item1,
-                                                            ip2UserRegistations[userID].Visits[ip2UserRegistations[userID].Visits.Count - 2].Item2)
-                           : "Это первое посещение!";
+            string lastVisit;
+            lock (ip2UserRegistations[userID].Visits)
+            {
+                try
+                {
+                    lastVisit = ip2UserRegistations[userID].Visits.Count > 1 ?
+                        string.Format("{0} on {1}", ip2UserRegistations[userID].Visits[ip2UserRegistations[userID].Visits.Count - 2].Item1,
+                            ip2UserRegistations[userID].Visits[ip2UserRegistations[userID].Visits.Count - 2].Item2 ?? "nonamed")
+                        : "Это первое посещение!";
+                }
+                catch (Exception)
+                {
+                    lastVisit = "Посещение.";
+                }
 
-            var toDraw = String.Format("Всего посещений: {0}\r\n" +
-                          "За сегодня: {1}\r\n" +
-                          "Предыдущий визит: {2}", ip2UserRegistations[userID].Visits.Count,
-                ip2UserRegistations[userID].Visits.Count(visitTime => visitTime.Item1.Date.Equals(DateTime.Now.Date)), lastVisit);
+                var toDraw = String.Format("Всего cтраниц открыто: {0}\r\n" +
+                                           "В том числе сегодня: {1}\r\n" +
+                                           "Предыдущий Ваш визит: {2} с адреса {3}\r\n" +
+                                           "Уникальных пользователей: {4}\r\n", ip2UserRegistations[userID].Visits.Count,
+                    ip2UserRegistations[userID].Visits.Count(visitTime => visitTime.Item1.Date.Equals(DateTime.Now.Date)), lastVisit, UserIp(), ip2UserRegistations.Keys.Count);
 
+                toDraw += String.Format("\r\nВаш IP {0}\r\n" +
+                                        "Ваш браузер {1}\r\n" +
+                                        "Ваше разрешение дисплея {2}X{3}\r\n\r\n", UserIp(), Request.Browser.Browser, x, y);
+                return toDraw;
+            }
+        }
+
+        private string CreateStatistics(string toDraw)
+        {
             var fileName = new Random().Next() + ".jpg";
-            var path = @"c:\Users\sht3ch\Documents\LearnSpace\4tasks4net\MvcApplication2\pics\info\" + fileName;
+            var path = @"C:\Users\shtech\Documents\siteBins4net\MvcApplication2\pics\info\" + fileName;
             DrawText(toDraw, new Font(FontFamily.GenericMonospace, 15, FontStyle.Bold), Color.Brown, Color.Cornsilk).Save(path, ImageFormat.Jpeg);
+
             return fileName;
+
         }
 
         private string UserIp()
         {
-            return HttpContext.Request.UserHostAddress;
+            return HttpContext.Request.UserHostAddress ?? Request.ServerVariables["REMOTE_ADDR"] ?? "zero";
         }
 
-        private void Register(string place)
+        private void Register(string place = "Unknown")
         {
             var userIp = UserIp();
             if (userIp != null)
             {
                 if (!ip2UserRegistations.ContainsKey(userIp))
                 {
-                    ip2UserRegistations.Add(userIp, new UserRegistation());
+                    ip2UserRegistations.AddOrUpdate(userIp, new UserRegistation(), (a, b) => new UserRegistation());
                 }
-                ip2UserRegistations[userIp].Visits.Add(new Tuple<DateTime, string>(DateTime.Now, place));
+                lock (ip2UserRegistations[userIp].Visits)
+                    ip2UserRegistations[userIp].Visits.Add(new Tuple<DateTime, string>(DateTime.Now, place));
             }
         }
 
@@ -223,7 +247,7 @@ namespace MvcApplication2.Controllers
         {
             if (!FotoName2Comments.ContainsKey(toFoto))
             {
-                FotoName2Comments.Add(toFoto, new FotoDatas());
+                FotoName2Comments.AddOrUpdate(toFoto, new FotoDatas(), (a, b) => new FotoDatas());
                 FotoName2Comments[toFoto].FotoName = toFoto;
             }
             string ans;
@@ -245,7 +269,7 @@ namespace MvcApplication2.Controllers
         {
             if (!FotoName2Comments.ContainsKey(toFoto))
             {
-                FotoName2Comments.Add(toFoto, new FotoDatas());
+                FotoName2Comments.AddOrUpdate(toFoto, new FotoDatas(), (a, b) => new FotoDatas());
                 FotoName2Comments[toFoto].FotoName = toFoto;
             }
 
@@ -260,7 +284,11 @@ namespace MvcApplication2.Controllers
             else
             {
                 ans = "Ваш голос учтён.";
-                FotoName2Comments[toFoto].Mark += sign;
+                if (sign > 0)
+                    FotoName2Comments[toFoto].PositiveMark++;
+                else
+                    FotoName2Comments[toFoto].NegativeMark++;
+
                 ip2UserRegistations[UserIp()].LastVoteTime = DateTime.Now;
             }
             return ans;
@@ -274,7 +302,9 @@ namespace MvcApplication2.Controllers
         public ActionResult Statictics()
         {
             Register("info");
-            return View(new FotoName { name = CreateStatistics() });
+            var toDraw = FormStatistics(Request.QueryString["x"] ?? 0.ToString(), Request.QueryString["y"] ?? 0.ToString());
+            
+            return View(new FotoName { name = CreateStatistics(toDraw), stats = toDraw});
         }
 
         public ActionResult Info()
@@ -298,18 +328,16 @@ namespace MvcApplication2.Controllers
         {
             Register("galery");
             var place = "minis";
-            return View(Directory.GetFiles(@"c:\users\sht3ch\documents\visual studio 2013\Projects\MvcApplication2\MvcApplication2\pics\" + place + "\\").
+            return View(Directory.GetFiles(@"C:\Users\shtech\Documents\siteBins4net\MvcApplication2\pics\" + place + "\\").
                 Where(name => name.EndsWith(".jpg")).Select(str => "/pics/" + place + "/" + str.Split(new[] { Path.DirectorySeparatorChar }, StringSplitOptions.RemoveEmptyEntries).
-                    Last()).
+                    Last()).Select(fileName=> fileName.Replace(" ","%20")).
                     ToList());
         }
 
         public ActionResult MyVisits()
         {
             Register("visits");
-            if (UserIp() == null)
-                return View(new UserRegistation());
-            return View(ip2UserRegistations[UserIp()]);
+            return View(ip2UserRegistations);
         }
 
         public ActionResult AjaxGetComments(int id)
@@ -327,7 +355,7 @@ namespace MvcApplication2.Controllers
             int sign;
             sign = int.TryParse(Request.QueryString.Get("sign"), out sign) ? sign : 0;
 
-            return View(new VoteForFoto { foto = requiredName, sign = sign, status = AddVote(requiredName, sign) });
+            return View(new VoteForFoto { status = AddVote(requiredName, sign) });
         }
 
         public ActionResult AjaxGetVote(int id)
@@ -335,22 +363,34 @@ namespace MvcApplication2.Controllers
             Register("Get vote");
             var requiredName = Request.QueryString.Get("name");
 
-            var mark = FotoName2Comments.ContainsKey(requiredName) ? FotoName2Comments[requiredName].Mark : 0;
 
-            string filename = string.Format(@"c:\Users\sht3ch\Documents\LearnSpace\4tasks4net\MvcApplication2\pics\marks\mark{0}.jpg",mark);
+            int positivePercent = 0;
+            int negativPercent = 0;
+            int TotalMarks = 0;
 
-            if (!System.IO.File.Exists(filename))
+            if (FotoName2Comments.ContainsKey(requiredName))
             {
-                DrawText("Current mark is " + mark, new Font(FontFamily.GenericMonospace, 15, FontStyle.Bold), Color.Brown, Color.Cornsilk).Save(filename);
+                TotalMarks = FotoName2Comments[requiredName].PositiveMark + FotoName2Comments[requiredName].NegativeMark;
+                if (TotalMarks != 0)
+                {
+                    positivePercent = (int)((100 * FotoName2Comments[requiredName].PositiveMark / (double)TotalMarks));
+                    negativPercent = 100 - positivePercent;
+                }
+
             }
 
-            return View(new VoteForFoto { foto = requiredName, sign = mark, status = Path.GetFileName(filename)});
+            //            string filename = string.Format(@"C:\Users\shtech\Documents\siteBins4net\MvcApplication2\pics\marks\mark{0}.jpg", mark);
+
+            //            if (!System.IO.File.Exists(filename))
+            //            {
+            //                DrawText("Current mark is " + mark, new Font(FontFamily.GenericMonospace, 15, FontStyle.Bold), Color.Brown, Color.Cornsilk).Save(filename);
+            //            }
+
+            return View(new VoteForFoto { positive = positivePercent, negative = negativPercent, status = TotalMarks.ToString() });
         }
         public ActionResult AjaxTestScript()
         {
             return View();
         }
-
-
     }
 }

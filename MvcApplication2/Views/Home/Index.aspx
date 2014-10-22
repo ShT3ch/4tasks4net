@@ -3,7 +3,7 @@
 <asp:Content runat="server" ID="ContentPlaceHolderHead" ContentPlaceHolderID="ContentPlaceHolderHead">
 </asp:Content>
 <asp:Content runat="server" ID="ContentPlaceHolderBody" ContentPlaceHolderID="ContentPlaceHolderBody">
-    <h1 align="center">Это еще один бесполезный сайт. А ведь мог бы поехать покататься на лыжах.</h1>
+    <span class="headers">Это еще один бесполезный сайт. А ведь мог бы поехать покататься на лыжах.</span>
     <table>
         <tr>
             <td></td>

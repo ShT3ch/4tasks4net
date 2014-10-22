@@ -4,7 +4,8 @@ namespace MvcApplication2.Models
 {
     public class FotoDatas
     {
-        public int Mark;
+        public int PositiveMark;
+        public int NegativeMark;
         public string FotoName;
         public List<string> Comments = new List<string>(); 
     }

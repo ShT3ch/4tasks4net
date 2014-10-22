@@ -2,5 +2,5 @@
 <asp:Content runat="server" ID="ContentPlaceHolderHead" ContentPlaceHolderID="ContentPlaceHolderHead"></asp:Content>
 
 <asp:Content runat="server" ID="ContentPlaceHolderBody" ContentPlaceHolderID="ContentPlaceHolderBody">
-    <img src="/pics/info/<%=Model.name %>" alt="info"></img>
+    <img src="/pics/info/<%=Model.name %>" alt="<%=Model.stats %>"></img>
 </asp:Content>

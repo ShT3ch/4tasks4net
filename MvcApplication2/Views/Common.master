@@ -1,6 +1,6 @@
 ﻿<%@ Master Language="C#" %>
 
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<!DOCTYPE html>
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
@@ -9,15 +9,15 @@
     <asp:ContentPlaceHolder ID="ContentPlaceHolderHead" runat="server">
     </asp:ContentPlaceHolder>
 </head>
-<body <asp:ContentPlaceHolder ID="ContentPlaceHolderBODYTAGS" runat="server">
+<body onload="var hyper = document.getElementById('toStatistics');var x = screen.width;var y = screen.height;hyper.href+='?x='+x+'&amp;y='+y;" <asp:ContentPlaceHolder ID="ContentPlaceHolderBODYTAGS" runat="server">
             </asp:ContentPlaceHolder>>
-        <div class="NaviPanel" align="center">
+        <div class="NaviPanel">
             YANAVIGATORPANEL<br/>
             <a href="/"> TOMAIN</a><br/>
             <a href="/Home/Info"> Инфо</a><br/>
             <a href="/Home/Galery"> Галерейа</a><br/>
             <a href="/Home/myvisits"> Визиты</a><br/>
-            <a href="/Home/Statictics"> Статистика</a><br/>
+            <a id ="toStatistics" href="/Home/Statictics"> Статистика</a><br/>
         </div>
         <div class="Content">
             <asp:ContentPlaceHolder ID="ContentPlaceHolderBody" runat="server">

@@ -29,18 +29,18 @@ namespace MvcApplication2
         {
             if (!isInited)
             {
-                var files = Directory.GetFiles(@"c:\users\sht3ch\documents\visual studio 2013\Projects\MvcApplication2\MvcApplication2\pics\Full").Where(name => name.EndsWith(".jpg"));
+                var files = Directory.GetFiles(@"C:\Users\shtech\Documents\siteBins4net\MvcApplication2\pics\Full").Where(name => name.EndsWith(".jpg"));
                 foreach (var file in files)
                 {
                     var old = new Bitmap(file);
                     var New = ScaleByWidthAndHeight(old, 150, 100, 50);
-                    New.Save(@"c:\users\sht3ch\documents\visual studio 2013\Projects\MvcApplication2\MvcApplication2\pics\minis\" + Path.GetFileName(file));
+                    New.Save(@"C:\Users\shtech\Documents\siteBins4net\MvcApplication2\pics\minis\" + Path.GetFileName(file));
                 }
                 foreach (var file in files)
                 {
                     var old = new Bitmap(file);
                     var New = ScaleByWidthAndHeight(old, 400, 200, 50);
-                    New.Save(@"c:\users\sht3ch\documents\visual studio 2013\Projects\MvcApplication2\MvcApplication2\pics\mediums\" + Path.GetFileName(file));
+                    New.Save(@"C:\Users\shtech\Documents\siteBins4net\MvcApplication2\pics\mediums\" + Path.GetFileName(file));
                 }
             }
             isInited = true;

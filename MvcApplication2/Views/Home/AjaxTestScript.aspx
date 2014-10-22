@@ -4,7 +4,7 @@
 
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head runat="server">
-    <script>
+    <script type="text/javascript">
         function getXmlHttp() {
             var xmlhttp;
             try {
